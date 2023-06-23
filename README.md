@@ -10,4 +10,22 @@
 * 批量执行
 
 ## 配置文件
-将conf.conf.json改为conf.json。local下填本地模型路径，api下填接口连接脚本路径
+将conf.conf.json改为conf.json
+### default下：
+默认使用模型名称
+### model下：
+填模型，事例：
+```
+"modelname":{
+    "path": "path/to/model",
+    "type":"api/transfromers/..."
+}
+```
+api情况下路径中写启动脚本，脚本事例：
+```
+def connect(q):
+    while True:
+        if q.get()[:3]=="ask:":
+            response="model return"
+            q.put(response)
+```

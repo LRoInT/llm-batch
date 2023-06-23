@@ -1,5 +1,14 @@
-#连接事例脚本
-def connect():
-    message="" #获取模型返回
-    pass
-    return message
+def connect(q,e,b): #模型连接脚本事例
+    def script():
+        print("Start Running")
+        while True:
+            if e.wait():
+                task=q.get()
+                if task[:5]=="task:":
+                    response="model return"
+                    q.put(response)
+                    b.set()
+                else:
+                  b.set()
+                e.clear()
+    return script
