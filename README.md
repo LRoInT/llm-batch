@@ -14,18 +14,28 @@
 ### default下：
 默认使用模型名称
 ### model下：
-填模型，事例：
+填模型信息，事例：
 ```
 "modelname":{
     "path": "path/to/model",
     "type":"api/transfromers/..."
 }
 ```
-api情况下路径中写启动脚本，脚本事例：
+api情况下路径中写启动脚本，脚本事例
+`connect/example.py`
 ```
-def connect(q):
-    while True:
-        if q.get()[:3]=="ask:":
-            response="model return"
-            q.put(response)
+def connect(q,e,b):
+    def script():
+        print("Start Running")
+        while True:
+            if e.wait():
+                task=q.get()
+                if task[:5]=="task:":
+                    response="model return"
+                    q.put(response)
+                    b.set()
+                else:
+                  b.set()
+                e.clear()
+    return script
 ```
