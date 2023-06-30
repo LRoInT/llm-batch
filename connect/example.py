@@ -1,3 +1,4 @@
+from sys import exit
 def connect(q,e,b): #模型连接脚本事例
     def script():
         print("Start Running")
@@ -8,6 +9,8 @@ def connect(q,e,b): #模型连接脚本事例
                     response="model return"
                     q.put(response)
                     b.set()
+                elif task=="!exit":
+                    exit()
                 else:
                   b.set()
                 e.clear()

@@ -14,17 +14,19 @@
 ### default下：
 默认使用模型名称
 ### model下：
-填模型信息，事例：
+填模型信息，示例：
 ```
 "modelname":{
-    "path": "path/to/model",
-    "type":"api/transfromers/..."
+    "path": "model path", #模型或脚本的路径
+    "type":"script/transfromers/..." #模型类型，脚本或本地模型
+    "lang":"zh/en" #启动语言
 }
 ```
-api情况下路径中写启动脚本，脚本事例
+script情况下路径中写启动脚本，脚本事例
 `connect/example.py`
 ```
-def connect(q,e,b):
+from sys import exit
+def connect(q,e,b): #模型连接脚本事例
     def script():
         print("Start Running")
         while True:
@@ -34,8 +36,24 @@ def connect(q,e,b):
                     response="model return"
                     q.put(response)
                     b.set()
+                elif task=="!exit":
+                    exit()
                 else:
                   b.set()
                 e.clear()
     return script
 ```
+### commands下
+可用命令列表，写法：
+`"command(argv)":["command./...","allon/on/off"]`
+command(argv)：命令名称及参数
+"command./..."：命令来自的库
+allon：全部允许
+on：启用
+off：关闭
+### workspace下
+模型初始工作目录
+### setup下
+用于初始化模型使模型处理任务
+zh：中文初始化
+en：英文初始化
