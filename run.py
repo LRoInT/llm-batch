@@ -5,16 +5,15 @@ from call import *
 import sys
 import os
 import queue
+import re
 response=""
 conf=json.load(open("conf.json","r"))
-default=conf["default"]
-modelname=default
+modelname=conf["default"]
 model=conf["model"][modelname]
 argv=sys.argv[1:]
-if not os.path.exists(conf["workspace"]):
-    os.makedirs(conf["workspace"])
-os.chdir(conf["workspace"])
-cmdlist=conf["commands"]
+cmdlist=[[],[]]
+cmdlist[0]=list(conf["commands"].keys())
+cmdlist[1]=list(conf["commands"].items())
 if model["lang"]=="zh":
     setup=conf["setup"]["zh"]
 elif model["lang"]=="en":
@@ -30,12 +29,43 @@ help="""选项：
 -s --setting 设置修改程序
 """
 ###############
+def runret(modret):
+    runlist=[]
+    run_set=[]
+    pattern = r'\[!(.+?)\]'
+    matches = re.findall(pattern, modret)
+    for match in matches:
+        runlist.append(match)
+    runlist_real=runlist.copy()
+    for c in runlist_real:
+        c1=c
+        for n in cmdlist[0]:
+            if n in c:
+                c=c.replace(n,cmdlist[1][cmdlist[0].index(n)][1][1])
+                run_set.append(cmdlist[1][cmdlist[0].index(n)][1][2])
+        runlist_real[runlist.index(c1)]=c
+    print(runlist,runlist_real)
+    for r in range(len(runlist)):
+        if run_set[r]=="allon":
+            print(f"RUN {runlist_real[r]}")
+            exec(runlist_real[r])
+        if run_set[r]=="on":
+            chose=input(f"Run {runlist_real[r]}, (Y)es/(N)o:")
+            if chose=="Y" or "Yes":
+                exec(runlist_real[r])
+        if run_set[r]=="off":
+            print(f"NOT RUN {runlist_real[r]}")
+def wodir():
+    if not os.path.exists(conf["workspace"]):
+        os.makedirs(conf["workspace"])
+    os.chdir(conf["workspace"])
+###############
 print(versions)
 ###############
 if conf["model"]=={}: #配置错误检查
     print("没有可调用的模型，请检查你的配置。\nNo model can use,please check your configuration.\n")
     sys.exit()
-if conf["model"][modelname]=={} or {'type': '', 'path': ''}:
+if conf["model"][modelname]=={} or conf["model"][modelname]=={'type': '', 'path': '',"lang":""}:
     print("模型设置异常，请检查你的配置。\nThe model Settings are abnormal, please check your configuration.\n")
     sys.exit()
 if argv==[]:
@@ -53,20 +83,24 @@ if "-r" in argv or "--run" in argv:
 if "-s" in argv or "--setting" in argv:
     pass
 ###############
+#启动对话
 if model["type"]=="script":
+    connect=None
     exec(open(model["path"],"r").read())
     q_model=queue.Queue()
     e_model=Event()
     e_back=Event()
-    connect=None
     script_run=connect(q_model,e_model,e_back)
     bot=Thread(target=script_run)
+    bot.setDaemon(True)
     bot.start()
+    wodir()
     while True:
         bat=input("You:")
         if bat=="!exit":
             q_model.put(bat)
-            sys.exit()
+            if e_back.wait():
+                sys.exit()
         else:
             bat="task:"+bat
             e_back.clear()
@@ -75,12 +109,14 @@ if model["type"]=="script":
             if e_back.wait():
                 response=q_model.get()
                 print(response)
+                runret(response)
+
 if model["type"]=="transformers":
     model,tokenizer=trans_load(model["path"])
-    #启动对话
     response, history = model.chat(tokenizer, setup, history=[])
     print(response)
     while True:
+        wodir()
         task=input("You:")
         if task=="!exit":
             sys.exit()

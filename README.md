@@ -45,8 +45,8 @@ def connect(q,e,b): #模型连接脚本事例
 ```
 ### commands下
 可用命令列表，写法：
-`"command(argv)":["command./...","allon/on/off"]`
-command(argv)：命令名称及参数
+`"comman":["argv","command./...","allon/on/off"]`
+command：命令名称
 "command./..."：命令来自的库
 allon：全部允许
 on：启用
