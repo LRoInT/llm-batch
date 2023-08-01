@@ -6,7 +6,7 @@ def connect(q,e,b,s): #模型连接脚本事例
             if e.wait():
                 task=q.get()
                 if task[:5]=="task:":
-                    response="model return"
+                    response="model return[!use-api(244)]"
                     q.put(response)
                     b.set()
                 elif task=="!exit":

@@ -27,6 +27,37 @@ help="""选项：
 -s 设置修改程序
 """
 ###############
+def runret(modret):
+    runlist=[]
+    run_set=[]
+    pattern = r'\[!(.+?)\]'
+    matches = re.findall(pattern, modret)
+    for match in matches:
+        runlist.append(match)
+    runlist_real=runlist.copy()
+    for c in runlist_real:
+        c1=c
+        for n in cmdlist[0]:
+            if n in c:
+                c=c.replace(n,cmdlist[1][cmdlist[0].index(n)][1][1])
+                run_set.append(cmdlist[1][cmdlist[0].index(n)][1][2])
+        runlist_real[runlist.index(c1)]=c
+    print(runlist,runlist_real)
+    for r in range(len(runlist)):
+        if run_set[r]=="allon":
+            print(f"RUN {runlist_real[r]}")
+            exec(runlist_real[r])
+        if run_set[r]=="on":
+            chose=input(f"Run {runlist_real[r]}, (Y)es/(N)o:")
+            if chose=="Y" or "Yes":
+                exec(runlist_real[r])
+        if run_set[r]=="off":
+            print(f"NOT RUN {runlist_real[r]}")
+def wodir():
+    if not os.path.exists(conf["workspace"]):
+        os.makedirs(conf["workspace"])
+    os.chdir(conf["workspace"])
+###############
 print(versions)
 ###############
 if conf["model"]=={}: #配置错误检查
@@ -62,7 +93,9 @@ if model=={} or model["type"]=="" or model["path"]=="" or model["lang"]=="":
     print("模型设置异常，请检查你的配置。\nThe model Settings are abnormal, please check your configuration.\n")
     sys.exit()
 ###############
+#启动对话
 if model["type"]=="script":
+    connect=None
     exec(open(model["path"],"r").read())
     q_model=queue.Queue()
     e_model=Event()
@@ -70,6 +103,7 @@ if model["type"]=="script":
     script_run=connect(q_model,e_model,e_back,setup)
     bot=Thread(target=script_run)
     bot.start()
+    wodir()
     while True:
         bat=input("You:")
         if bat=="!exit":
@@ -86,12 +120,14 @@ if model["type"]=="script":
             if e_back.wait():
                 response=q_model.get()
                 print(response)
+                runret(response)
+
 if model["type"]=="transformers":
     model,tokenizer=trans_load(model["path"])
-    #启动对话
     response, history = model.chat(tokenizer, setup, history=[])
     print(response)
     while True:
+        wodir()
         task=input("You:")
         if task=="!exit":
             sys.exit()
