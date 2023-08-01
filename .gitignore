@@ -1,2 +1,3 @@
 conf.json
 *.pyc
+.history

@@ -1,5 +1,5 @@
 from sys import exit
-def connect(q,e,b): #模型连接脚本事例
+def connect(q,e,b,s): #模型连接脚本事例
     def script():
         print("Start Running")
         while True:
