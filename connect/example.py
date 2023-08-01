@@ -10,6 +10,7 @@ def connect(q,e,b,s): #模型连接脚本事例
                     q.put(response)
                     b.set()
                 elif task=="!exit":
+                    b.set()
                     exit()
                 else:
                   b.set()

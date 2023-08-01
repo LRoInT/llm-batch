@@ -67,14 +67,17 @@ if model["type"]=="script":
     q_model=queue.Queue()
     e_model=Event()
     e_back=Event()
-    script_run=connect(q_model,e_model,e_back)
+    script_run=connect(q_model,e_model,e_back,setup)
     bot=Thread(target=script_run)
     bot.start()
     while True:
         bat=input("You:")
         if bat=="!exit":
+            e_back.clear()
             q_model.put(bat)
-            sys.exit()
+            e_model.set()
+            if e_back.wait():
+                exit()
         else:
             bat="task:"+bat
             e_back.clear()
